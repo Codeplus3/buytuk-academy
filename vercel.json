@@ -1,9 +1,10 @@
 {
   "buildCommand": "pnpm build",
   "devCommand": "pnpm dev",
-  "installCommand": "pnpm install",
+  "installCommand": "pnpm install --frozen-lockfile",
   "framework": "vite",
   "outputDirectory": "dist",
+  "nodeVersion": "18.x",
   "env": [
     {
       "key": "VITE_API_URL",
@@ -19,7 +20,16 @@
       "key": "VITE_ENABLE_PWA",
       "description": "Enable Progressive Web App",
       "value": "true"
+    },
+    {
+      "key": "VITE_ENABLE_ANALYTICS",
+      "description": "Enable analytics tracking",
+      "value": "false"
+    },
+    {
+      "key": "VITE_ENABLE_OFFLINE_MODE",
+      "description": "Enable offline functionality",
+      "value": "true"
     }
-  ],
-  "nodeVersion": "18.x"
+  ]
 }
