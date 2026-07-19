@@ -9,7 +9,8 @@
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
     "preview": "vite preview",
     "typecheck:libs": "tsc --build",
-    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
+    "lint": "tsc --noEmit"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -72,11 +73,15 @@
     "wouter": "^3.3.5",
     "zod": "^3.25.76",
     "prettier": "^3.9.5",
-    "typescript": "~5.9.3"
+    "typescript": "~5.10.2"
   },
   "dependencies": {
     "i18next": "^26.3.1",
     "react-i18next": "^17.0.8",
     "@replit/connectors-sdk": "^0.4.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=9.0.0"
   }
 }
