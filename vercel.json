@@ -1,0 +1,25 @@
+{
+  "buildCommand": "pnpm build",
+  "devCommand": "pnpm dev",
+  "installCommand": "pnpm install",
+  "framework": "vite",
+  "outputDirectory": "dist",
+  "env": [
+    {
+      "key": "VITE_API_URL",
+      "description": "API endpoint URL",
+      "value": "http://localhost:3001/api"
+    },
+    {
+      "key": "VITE_DEFAULT_LANGUAGE",
+      "description": "Default language (ar or en)",
+      "value": "ar"
+    },
+    {
+      "key": "VITE_ENABLE_PWA",
+      "description": "Enable Progressive Web App",
+      "value": "true"
+    }
+  ],
+  "nodeVersion": "18.x"
+}

@@ -1,0 +1,10 @@
+{
+  "github": {
+    "silent": false,
+    "enabled": true
+  },
+  "git": {
+    "deploymentEnabled": true,
+    "previewDeploymentSetting": "preview"
+  }
+}
