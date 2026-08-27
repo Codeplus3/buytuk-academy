@@ -1,22 +1,45 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: BuyTuk Academy Admin Dashboard API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: dashboard
+    description: Dashboard summary and analytics
+  - name: tenants
+    description: Tenant management
+  - name: schools
+    description: School management
+  - name: users
+    description: User management
+  - name: roles
+    description: Role and permission management
+  - name: assessments
+    description: Assessment management
+  - name: submissions
+    description: Submission management
+  - name: interventions
+    description: Intervention management
+  - name: evidence
+    description: Evidence management
+  - name: notifications
+    description: Notification management
+  - name: reports
+    description: Reports and analytics
+  - name: settings
+    description: System settings
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +47,2185 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─── Dashboard ───────────────────────────────────────────────
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get platform summary stats
+      responses:
+        "200":
+          description: Summary stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/activity:
+    get:
+      operationId: getDashboardActivity
+      tags: [dashboard]
+      summary: Recent platform activity feed
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Activity items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  /dashboard/charts:
+    get:
+      operationId: getDashboardCharts
+      tags: [dashboard]
+      summary: Chart data for enrollment, assessments, interventions over time
+      responses:
+        "200":
+          description: Chart data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardCharts"
+
+  # ─── Tenants ─────────────────────────────────────────────────
+  /tenants:
+    get:
+      operationId: listTenants
+      tags: [tenants]
+      summary: List all tenants
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, suspended, trial, expired]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paginated tenants
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TenantPage"
+    post:
+      operationId: createTenant
+      tags: [tenants]
+      summary: Create a new tenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TenantInput"
+      responses:
+        "201":
+          description: Created tenant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+
+  /tenants/{id}:
+    get:
+      operationId: getTenant
+      tags: [tenants]
+      summary: Get tenant by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tenant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+    patch:
+      operationId: updateTenant
+      tags: [tenants]
+      summary: Update tenant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TenantUpdate"
+      responses:
+        "200":
+          description: Updated tenant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+    delete:
+      operationId: deleteTenant
+      tags: [tenants]
+      summary: Delete tenant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /tenants/{id}/suspend:
+    post:
+      operationId: suspendTenant
+      tags: [tenants]
+      summary: Suspend a tenant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Suspended tenant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+
+  /tenants/{id}/activate:
+    post:
+      operationId: activateTenant
+      tags: [tenants]
+      summary: Activate a tenant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Activated tenant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+
+  # ─── Schools ─────────────────────────────────────────────────
+  /schools:
+    get:
+      operationId: listSchools
+      tags: [schools]
+      summary: List schools
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: tenantId
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive]
+      responses:
+        "200":
+          description: Paginated schools
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SchoolPage"
+    post:
+      operationId: createSchool
+      tags: [schools]
+      summary: Create a school
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SchoolInput"
+      responses:
+        "201":
+          description: Created school
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/School"
+
+  /schools/{id}:
+    get:
+      operationId: getSchool
+      tags: [schools]
+      summary: Get school by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: School
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/School"
+    patch:
+      operationId: updateSchool
+      tags: [schools]
+      summary: Update school
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SchoolUpdate"
+      responses:
+        "200":
+          description: Updated school
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/School"
+    delete:
+      operationId: deleteSchool
+      tags: [schools]
+      summary: Delete school
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── Users ───────────────────────────────────────────────────
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List users
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [super_admin, tenant_admin, school_admin, teacher, student, guardian]
+        - name: tenantId
+          in: query
+          schema:
+            type: string
+        - name: schoolId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive, suspended]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paginated users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPage"
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInput"
+      responses:
+        "201":
+          description: Created user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      summary: Delete user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /users/{id}/suspend:
+    post:
+      operationId: suspendUser
+      tags: [users]
+      summary: Suspend user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Suspended user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/{id}/activate:
+    post:
+      operationId: activateUser
+      tags: [users]
+      summary: Activate user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Activated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  # ─── Roles & Permissions ─────────────────────────────────────
+  /roles:
+    get:
+      operationId: listRoles
+      tags: [roles]
+      summary: List roles
+      parameters:
+        - name: tenantId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Roles list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Role"
+    post:
+      operationId: createRole
+      tags: [roles]
+      summary: Create a role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleInput"
+      responses:
+        "201":
+          description: Created role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Role"
+
+  /roles/{id}:
+    get:
+      operationId: getRole
+      tags: [roles]
+      summary: Get role by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Role"
+    patch:
+      operationId: updateRole
+      tags: [roles]
+      summary: Update role
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleUpdate"
+      responses:
+        "200":
+          description: Updated role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Role"
+    delete:
+      operationId: deleteRole
+      tags: [roles]
+      summary: Delete role
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /policies:
+    get:
+      operationId: listPolicies
+      tags: [roles]
+      summary: List ABAC policies
+      parameters:
+        - name: tenantId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Policies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Policy"
+    post:
+      operationId: createPolicy
+      tags: [roles]
+      summary: Create a policy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PolicyInput"
+      responses:
+        "201":
+          description: Created policy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Policy"
+
+  # ─── Assessments ─────────────────────────────────────────────
+  /assessments:
+    get:
+      operationId: listAssessments
+      tags: [assessments]
+      summary: List assessments
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, published, archived]
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [reading, writing, dictation, math, comprehensive]
+        - name: tenantId
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paginated assessments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssessmentPage"
+    post:
+      operationId: createAssessment
+      tags: [assessments]
+      summary: Create an assessment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssessmentInput"
+      responses:
+        "201":
+          description: Created assessment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assessment"
+
+  /assessments/{id}:
+    get:
+      operationId: getAssessment
+      tags: [assessments]
+      summary: Get assessment by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Assessment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assessment"
+    patch:
+      operationId: updateAssessment
+      tags: [assessments]
+      summary: Update assessment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssessmentUpdate"
+      responses:
+        "200":
+          description: Updated assessment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assessment"
+    delete:
+      operationId: deleteAssessment
+      tags: [assessments]
+      summary: Delete assessment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /assessments/{id}/publish:
+    post:
+      operationId: publishAssessment
+      tags: [assessments]
+      summary: Publish an assessment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Published assessment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assessment"
+
+  /submissions:
+    get:
+      operationId: listSubmissions
+      tags: [submissions]
+      summary: List submissions
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: assessmentId
+          in: query
+          schema:
+            type: string
+        - name: studentId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, submitted, graded, reviewed]
+      responses:
+        "200":
+          description: Paginated submissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionPage"
+
+  /submissions/{id}:
+    get:
+      operationId: getSubmission
+      tags: [submissions]
+      summary: Get submission by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Submission
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Submission"
+
+  # ─── Interventions ───────────────────────────────────────────
+  /interventions:
+    get:
+      operationId: listInterventions
+      tags: [interventions]
+      summary: List interventions
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, completed, cancelled]
+        - name: tenantId
+          in: query
+          schema:
+            type: string
+        - name: studentId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paginated interventions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterventionPage"
+    post:
+      operationId: createIntervention
+      tags: [interventions]
+      summary: Create an intervention
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InterventionInput"
+      responses:
+        "201":
+          description: Created intervention
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Intervention"
+
+  /interventions/{id}:
+    get:
+      operationId: getIntervention
+      tags: [interventions]
+      summary: Get intervention by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Intervention
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Intervention"
+    patch:
+      operationId: updateIntervention
+      tags: [interventions]
+      summary: Update intervention
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InterventionUpdate"
+      responses:
+        "200":
+          description: Updated intervention
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Intervention"
+
+  /referrals:
+    get:
+      operationId: listReferrals
+      tags: [interventions]
+      summary: List referrals
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, accepted, rejected, closed]
+      responses:
+        "200":
+          description: Paginated referrals
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReferralPage"
+    post:
+      operationId: createReferral
+      tags: [interventions]
+      summary: Create a referral
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReferralInput"
+      responses:
+        "201":
+          description: Created referral
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Referral"
+
+  # ─── Evidence ────────────────────────────────────────────────
+  /evidence:
+    get:
+      operationId: listEvidence
+      tags: [evidence]
+      summary: List evidence records
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: studentId
+          in: query
+          schema:
+            type: string
+        - name: tenantId
+          in: query
+          schema:
+            type: string
+        - name: requiresHumanReview
+          in: query
+          schema:
+            type: boolean
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [reading, writing, dictation, observation, assessment]
+      responses:
+        "200":
+          description: Paginated evidence
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvidencePage"
+
+  /evidence/{id}:
+    get:
+      operationId: getEvidence
+      tags: [evidence]
+      summary: Get evidence by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Evidence
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Evidence"
+
+  /evidence/{id}/review:
+    post:
+      operationId: reviewEvidence
+      tags: [evidence]
+      summary: Mark evidence as reviewed
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EvidenceReviewInput"
+      responses:
+        "200":
+          description: Reviewed evidence
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Evidence"
+
+  # ─── Notifications ───────────────────────────────────────────
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: List notifications
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: channel
+          in: query
+          schema:
+            type: string
+            enum: [email, sms, in_app, push]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [sent, delivered, failed, pending]
+      responses:
+        "200":
+          description: Paginated notifications
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationPage"
+    post:
+      operationId: sendNotification
+      tags: [notifications]
+      summary: Send a notification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationInput"
+      responses:
+        "201":
+          description: Sent notification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  /notifications/stats:
+    get:
+      operationId: getNotificationStats
+      tags: [notifications]
+      summary: Notification delivery statistics
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationStats"
+
+  # ─── Reports ─────────────────────────────────────────────────
+  /reports/overview:
+    get:
+      operationId: getReportsOverview
+      tags: [reports]
+      summary: Platform-wide report overview
+      parameters:
+        - name: tenantId
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Report overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportOverview"
+
+  /reports/interventions:
+    get:
+      operationId: getInterventionReport
+      tags: [reports]
+      summary: Intervention effectiveness report
+      parameters:
+        - name: tenantId
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Intervention report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterventionReport"
+
+  /reports/assessments:
+    get:
+      operationId: getAssessmentReport
+      tags: [reports]
+      summary: Assessment performance report
+      parameters:
+        - name: tenantId
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Assessment report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssessmentReport"
+
+  # ─── Settings ────────────────────────────────────────────────
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get system settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemSettings"
+    patch:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update system settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SystemSettingsUpdate"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemSettings"
+
+# ─── Schemas ───────────────────────────────────────────────────
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    # ─── Shared ─────────────────────────────────────────────
+    Pagination:
+      type: object
+      required: [page, limit, total, totalPages]
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+    # ─── Dashboard ──────────────────────────────────────────
+    DashboardSummary:
+      type: object
+      required: [totalTenants, activeTenants, totalSchools, totalUsers, totalStudents, totalTeachers, totalAssessments, activeInterventions, pendingEvidenceReviews, notificationsSentToday]
+      properties:
+        totalTenants:
+          type: integer
+        activeTenants:
+          type: integer
+        totalSchools:
+          type: integer
+        totalUsers:
+          type: integer
+        totalStudents:
+          type: integer
+        totalTeachers:
+          type: integer
+        totalAssessments:
+          type: integer
+        activeInterventions:
+          type: integer
+        pendingEvidenceReviews:
+          type: integer
+        notificationsSentToday:
+          type: integer
+        systemHealthScore:
+          type: number
+        enrollmentGrowthPercent:
+          type: number
+
+    ActivityItem:
+      type: object
+      required: [id, type, description, createdAt]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [user_created, tenant_created, assessment_published, intervention_started, evidence_uploaded, notification_sent, school_created]
+        description:
+          type: string
+        descriptionAr:
+          type: string
+        entityId:
+          type: string
+        entityType:
+          type: string
+        actorName:
+          type: string
+        tenantName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    DashboardCharts:
+      type: object
+      required: [enrollmentOverTime, assessmentsByType, interventionsByStatus, evidenceByType]
+      properties:
+        enrollmentOverTime:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChartDataPoint"
+        assessmentsByType:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChartDataPoint"
+        interventionsByStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChartDataPoint"
+        evidenceByType:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChartDataPoint"
+
+    ChartDataPoint:
+      type: object
+      required: [label, value]
+      properties:
+        label:
+          type: string
+        labelAr:
+          type: string
+        value:
+          type: number
+        color:
+          type: string
+
+    # ─── Tenants ────────────────────────────────────────────
+    Tenant:
+      type: object
+      required: [id, nameEn, nameAr, status, type, createdAt]
+      properties:
+        id:
+          type: string
+        nameEn:
+          type: string
+        nameAr:
+          type: string
+        status:
+          type: string
+          enum: [active, suspended, trial, expired]
+        type:
+          type: string
+          enum: [school_district, private_school, government, ngo]
+        contactEmail:
+          type: string
+        contactPhone:
+          type: string
+        schoolCount:
+          type: integer
+        userCount:
+          type: integer
+        studentCount:
+          type: integer
+        subscriptionPlan:
+          type: string
+        subscriptionExpiresAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    TenantPage:
+      type: object
+      required: [data, pagination]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tenant"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    TenantInput:
+      type: object
+      required: [nameEn, nameAr, type, contactEmail]
+      properties:
+        nameEn:
+          type: string
+          minLength: 2
+        nameAr:
+          type: string
+          minLength: 2
+        type:
+          type: string
+          enum: [school_district, private_school, government, ngo]
+        contactEmail:
+          type: string
+        contactPhone:
+          type: string
+        subscriptionPlan:
+          type: string
+
+    TenantUpdate:
+      type: object
+      properties:
+        nameEn:
+          type: string
+        nameAr:
+          type: string
+        status:
+          type: string
+          enum: [active, suspended, trial, expired]
+        contactEmail:
+          type: string
+        contactPhone:
+          type: string
+        subscriptionPlan:
+          type: string
+        subscriptionExpiresAt:
+          type: string
+          format: date-time
+
+    # ─── Schools ────────────────────────────────────────────
+    School:
+      type: object
+      required: [id, nameEn, nameAr, tenantId, status, createdAt]
+      properties:
+        id:
+          type: string
+        nameEn:
+          type: string
+        nameAr:
+          type: string
+        tenantId:
+          type: string
+        tenantName:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive]
+        city:
+          type: string
+        region:
+          type: string
+        principalName:
+          type: string
+        teacherCount:
+          type: integer
+        studentCount:
+          type: integer
+        phone:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    SchoolPage:
+      type: object
+      required: [data, pagination]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/School"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    SchoolInput:
+      type: object
+      required: [nameEn, nameAr, tenantId]
+      properties:
+        nameEn:
+          type: string
+          minLength: 2
+        nameAr:
+          type: string
+          minLength: 2
+        tenantId:
+          type: string
+        city:
+          type: string
+        region:
+          type: string
+        principalName:
+          type: string
+        phone:
+          type: string
+
+    SchoolUpdate:
+      type: object
+      properties:
+        nameEn:
+          type: string
+        nameAr:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive]
+        city:
+          type: string
+        region:
+          type: string
+        principalName:
+          type: string
+        phone:
+          type: string
+
+    # ─── Users ──────────────────────────────────────────────
+    User:
+      type: object
+      required: [id, nameEn, nameAr, email, role, status, tenantId, createdAt]
+      properties:
+        id:
+          type: string
+        nameEn:
+          type: string
+        nameAr:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [super_admin, tenant_admin, school_admin, teacher, student, guardian]
+        status:
+          type: string
+          enum: [active, inactive, suspended]
+        tenantId:
+          type: string
+        tenantName:
+          type: string
+        schoolId:
+          type: ["string", "null"]
+        schoolName:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        avatarUrl:
+          type: ["string", "null"]
+        lastLoginAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UserPage:
+      type: object
+      required: [data, pagination]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    UserInput:
+      type: object
+      required: [nameEn, nameAr, email, role, tenantId]
+      properties:
+        nameEn:
+          type: string
+        nameAr:
+          type: string
+        email:
+          type: string
+          
+        role:
+          type: string
+          enum: [super_admin, tenant_admin, school_admin, teacher, student, guardian]
+        tenantId:
+          type: string
+        schoolId:
+          type: string
+        phone:
+          type: string
+
+    UserUpdate:
+      type: object
+      properties:
+        nameEn:
+          type: string
+        nameAr:
+          type: string
+        role:
+          type: string
+          enum: [super_admin, tenant_admin, school_admin, teacher, student, guardian]
+        status:
+          type: string
+          enum: [active, inactive, suspended]
+        schoolId:
+          type: string
+        phone:
+          type: string
+
+    # ─── Roles & Policies ───────────────────────────────────
+    Role:
+      type: object
+      required: [id, name, tenantId, permissions, createdAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        tenantId:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+        userCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    RoleInput:
+      type: object
+      required: [name, tenantId, permissions]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        tenantId:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+
+    RoleUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+
+    Policy:
+      type: object
+      required: [id, name, tenantId, effect, resource, actions, createdAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        tenantId:
+          type: string
+        effect:
+          type: string
+          enum: [allow, deny]
+        resource:
+          type: string
+        actions:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    PolicyInput:
+      type: object
+      required: [name, tenantId, effect, resource, actions]
+      properties:
+        name:
+          type: string
+        tenantId:
+          type: string
+        effect:
+          type: string
+          enum: [allow, deny]
+        resource:
+          type: string
+        actions:
+          type: array
+          items:
+            type: string
+
+    # ─── Assessments ────────────────────────────────────────
+    Assessment:
+      type: object
+      required: [id, title, type, status, tenantId, createdAt]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        titleAr:
+          type: string
+        type:
+          type: string
+          enum: [reading, writing, dictation, math, comprehensive]
+        status:
+          type: string
+          enum: [draft, published, archived]
+        tenantId:
+          type: string
+        tenantName:
+          type: string
+        gradeLevel:
+          type: string
+        submissionCount:
+          type: integer
+        avgScore:
+          type: ["number", "null"]
+        publishedAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AssessmentPage:
+      type: object
+      required: [data, pagination]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Assessment"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    AssessmentInput:
+      type: object
+      required: [title, type, tenantId]
+      properties:
+        title:
+          type: string
+        titleAr:
+          type: string
+        type:
+          type: string
+          enum: [reading, writing, dictation, math, comprehensive]
+        tenantId:
+          type: string
+        gradeLevel:
+          type: string
+        description:
+          type: string
+
+    AssessmentUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        titleAr:
+          type: string
+        status:
+          type: string
+          enum: [draft, published, archived]
+        gradeLevel:
+          type: string
+        description:
+          type: string
+
+    Submission:
+      type: object
+      required: [id, assessmentId, studentId, status, createdAt]
+      properties:
+        id:
+          type: string
+        assessmentId:
+          type: string
+        assessmentTitle:
+          type: string
+        studentId:
+          type: string
+        studentName:
+          type: string
+        status:
+          type: string
+          enum: [pending, submitted, graded, reviewed]
+        score:
+          type: ["number", "null"]
+        maxScore:
+          type: ["number", "null"]
+        requiresHumanReview:
+          type: boolean
+        submittedAt:
+          type: ["string", "null"]
+          format: date-time
+        gradedAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    SubmissionPage:
+      type: object
+      required: [data, pagination]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Submission"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    # ─── Interventions ──────────────────────────────────────
+    Intervention:
+      type: object
+      required: [id, studentId, type, status, tenantId, createdAt]
+      properties:
+        id:
+          type: string
+        studentId:
+          type: string
+        studentName:
+          type: string
+        type:
+          type: string
+          enum: [academic, behavioral, social_emotional, speech_language, motor]
+        status:
+          type: string
+          enum: [active, completed, cancelled]
+        tenantId:
+          type: string
+        tenantName:
+          type: string
+        assignedTeacherId:
+          type: ["string", "null"]
+        assignedTeacherName:
+          type: ["string", "null"]
+        iipStatus:
+          type: string
+          enum: [not_started, in_progress, completed]
+        startedAt:
+          type: ["string", "null"]
+          format: date-time
+        completedAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    InterventionPage:
+      type: object
+      required: [data, pagination]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Intervention"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    InterventionInput:
+      type: object
+      required: [studentId, type, tenantId]
+      properties:
+        studentId:
+          type: string
+        type:
+          type: string
+          enum: [academic, behavioral, social_emotional, speech_language, motor]
+        tenantId:
+          type: string
+        assignedTeacherId:
+          type: string
+        notes:
+          type: string
+
+    InterventionUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [active, completed, cancelled]
+        iipStatus:
+          type: string
+          enum: [not_started, in_progress, completed]
+        assignedTeacherId:
+          type: string
+        notes:
+          type: string
+
+    Referral:
+      type: object
+      required: [id, studentId, referredBy, status, createdAt]
+      properties:
+        id:
+          type: string
+        studentId:
+          type: string
+        studentName:
+          type: string
+        referredBy:
+          type: string
+        referredByName:
+          type: string
+        status:
+          type: string
+          enum: [pending, accepted, rejected, closed]
+        reason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    ReferralPage:
+      type: object
+      required: [data, pagination]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Referral"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    ReferralInput:
+      type: object
+      required: [studentId, referredBy, reason]
+      properties:
+        studentId:
+          type: string
+        referredBy:
+          type: string
+        reason:
+          type: string
+
+    # ─── Evidence ───────────────────────────────────────────
+    Evidence:
+      type: object
+      required: [id, studentId, type, tenantId, requiresHumanReview, createdAt]
+      properties:
+        id:
+          type: string
+        studentId:
+          type: string
+        studentName:
+          type: string
+        type:
+          type: string
+          enum: [reading, writing, dictation, observation, assessment]
+        tenantId:
+          type: string
+        tenantName:
+          type: string
+        fileUrl:
+          type: ["string", "null"]
+        fileSizeBytes:
+          type: ["integer", "null"]
+        requiresHumanReview:
+          type: boolean
+        reviewedBy:
+          type: ["string", "null"]
+        reviewedAt:
+          type: ["string", "null"]
+          format: date-time
+        aiAnalysisScore:
+          type: ["number", "null"]
+        aiConfidence:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    EvidencePage:
+      type: object
+      required: [data, pagination]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Evidence"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    EvidenceReviewInput:
+      type: object
+      required: [reviewedBy, notes]
+      properties:
+        reviewedBy:
+          type: string
+        notes:
+          type: string
+        approved:
+          type: boolean
+
+    # ─── Notifications ──────────────────────────────────────
+    Notification:
+      type: object
+      required: [id, channel, status, recipientId, subject, createdAt]
+      properties:
+        id:
+          type: string
+        channel:
+          type: string
+          enum: [email, sms, in_app, push]
+        status:
+          type: string
+          enum: [sent, delivered, failed, pending]
+        recipientId:
+          type: string
+        recipientName:
+          type: string
+        subject:
+          type: string
+        body:
+          type: string
+        tenantId:
+          type: string
+        sentAt:
+          type: ["string", "null"]
+          format: date-time
+        deliveredAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    NotificationPage:
+      type: object
+      required: [data, pagination]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    NotificationInput:
+      type: object
+      required: [channel, recipientId, subject, body]
+      properties:
+        channel:
+          type: string
+          enum: [email, sms, in_app, push]
+        recipientId:
+          type: string
+        subject:
+          type: string
+        body:
+          type: string
+        tenantId:
+          type: string
+
+    NotificationStats:
+      type: object
+      required: [total, sent, delivered, failed, pending, byChannel]
+      properties:
+        total:
+          type: integer
+        sent:
+          type: integer
+        delivered:
+          type: integer
+        failed:
+          type: integer
+        pending:
+          type: integer
+        byChannel:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChartDataPoint"
+
+    # ─── Reports ────────────────────────────────────────────
+    ReportOverview:
+      type: object
+      required: [period, enrollmentTotal, assessmentCompletionRate, interventionSuccessRate, evidencePendingReview]
+      properties:
+        period:
+          type: string
+        enrollmentTotal:
+          type: integer
+        enrollmentGrowth:
+          type: number
+        assessmentCompletionRate:
+          type: number
+        interventionSuccessRate:
+          type: number
+        evidencePendingReview:
+          type: integer
+        topTenantsByActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChartDataPoint"
+        monthlyTrend:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChartDataPoint"
+
+    InterventionReport:
+      type: object
+      required: [total, active, completed, cancelled, byType, successRate]
+      properties:
+        total:
+          type: integer
+        active:
+          type: integer
+        completed:
+          type: integer
+        cancelled:
+          type: integer
+        successRate:
+          type: number
+        avgDurationDays:
+          type: number
+        byType:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChartDataPoint"
+        trend:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChartDataPoint"
+
+    AssessmentReport:
+      type: object
+      required: [total, published, avgScore, completionRate, byType]
+      properties:
+        total:
+          type: integer
+        published:
+          type: integer
+        avgScore:
+          type: number
+        completionRate:
+          type: number
+        byType:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChartDataPoint"
+        scoreDistribution:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChartDataPoint"
+
+    # ─── Settings ───────────────────────────────────────────
+    SystemSettings:
+      type: object
+      required: [platformNameEn, platformNameAr, defaultLanguage, maintenanceMode, aiAnalysisEnabled, maxFileSizeMb, allowedFileTypes, emailProvider, smsProvider]
+      properties:
+        platformNameEn:
+          type: string
+        platformNameAr:
+          type: string
+        defaultLanguage:
+          type: string
+          enum: [ar, en]
+        maintenanceMode:
+          type: boolean
+        aiAnalysisEnabled:
+          type: boolean
+        maxFileSizeMb:
+          type: integer
+        allowedFileTypes:
+          type: array
+          items:
+            type: string
+        emailProvider:
+          type: string
+          enum: [smtp, aws_ses, sendgrid]
+        smsProvider:
+          type: string
+          enum: [unifonic, twilio, stc]
+        supportEmail:
+          type: string
+        privacyPolicyUrl:
+          type: string
+        termsOfServiceUrl:
+          type: string
+
+    SystemSettingsUpdate:
+      type: object
+      properties:
+        platformNameEn:
+          type: string
+        platformNameAr:
+          type: string
+        defaultLanguage:
+          type: string
+          enum: [ar, en]
+        maintenanceMode:
+          type: boolean
+        aiAnalysisEnabled:
+          type: boolean
+        maxFileSizeMb:
+          type: integer
+        emailProvider:
+          type: string
+        smsProvider:
+          type: string
+        supportEmail:
+          type: string
