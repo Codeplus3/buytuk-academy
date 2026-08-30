@@ -1,7 +1,8 @@
 packages:
-  - artifacts/*
-  - lib/*
-  - lib/integrations/*
+  - apps/*
+  - engines/*
+  - domains/*
+  - packages/*
 
 autoInstallPeers: true
 
