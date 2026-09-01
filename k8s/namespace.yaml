@@ -1,0 +1,12 @@
+# =============================================================================
+# BuyTuk Academy - Namespace Definition
+# =============================================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: buytuk-academy
+  labels:
+    app.kubernetes.io/name: buytuk-academy
+    app.kubernetes.io/part-of: buytuk-platform
+    environment: production

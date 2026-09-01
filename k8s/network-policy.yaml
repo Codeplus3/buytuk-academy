@@ -1,0 +1,112 @@
+# =============================================================================
+# BuyTuk Academy - Network Policies
+# =============================================================================
+
+# Default deny all ingress traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: buytuk-academy
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+# Allow API to receive traffic from Ingress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-api-ingress
+  namespace: buytuk-academy
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: buytuk-api
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - port: 4000
+          protocol: TCP
+---
+# Allow API to connect to Database and Redis
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-api-to-database
+  namespace: buytuk-academy
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: buytuk-postgres
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: buytuk-api
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: buytuk-worker
+      ports:
+        - port: 5432
+          protocol: TCP
+---
+# Allow API to connect to Redis
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-api-to-redis
+  namespace: buytuk-academy
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: buytuk-redis
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: buytuk-api
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: buytuk-worker
+      ports:
+        - port: 6379
+          protocol: TCP
+---
+# Allow Inference Gateway to receive traffic from API
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-inference-ingress
+  namespace: buytuk-academy
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: buytuk-inference
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: buytuk-api
+      ports:
+        - port: 50050
+          protocol: TCP
+        - port: 50051
+          protocol: TCP
+        - port: 50052
+          protocol: TCP
+        - port: 50053
+          protocol: TCP
+        - port: 50054
+          protocol: TCP

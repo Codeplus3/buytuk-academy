@@ -1,0 +1,18 @@
+# =============================================================================
+# BuyTuk Academy - CAMeL Tools (Arabic NLP) Configuration
+# =============================================================================
+
+morphology:
+  db_path: "builtin"
+  backoff: true
+
+g2p:
+  method: "rule_based"
+  dialect: "MSA"
+  
+diacritization:
+  model: "camelbert-msa"
+  beam_size: 5
+
+pos_tagging:
+  scheme: "wtb"

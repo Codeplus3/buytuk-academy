@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: BuyTuk Academy API
+  version: 1.0.0
+  description: API for BuyTuk Academy educational platform.
+servers:
+  - url: http://localhost:4000/api
+paths:
+  /auth/login:
+    post:
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user: { type: object }

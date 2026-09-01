@@ -1,0 +1,19 @@
+# =============================================================================
+# BuyTuk Academy - Meta MMS Forced Alignment (Arabic) Configuration
+# =============================================================================
+
+model:
+  name: "facebook/mms-1b-all"
+  language_id: "arb" # Modern Standard Arabic
+  device: "cuda"
+  
+tokenizer:
+  vocab_file: "vocab_arb.json"
+  
+audio:
+  sampling_rate: 16000
+  normalize: true
+  
+alignment:
+  stride: 0.02
+  return_timestamps: "word"

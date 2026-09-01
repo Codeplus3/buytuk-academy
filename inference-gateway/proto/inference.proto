@@ -1,0 +1,98 @@
+
+---
+
+## 📁 الملف 5/14: `proto/inference.proto`
+
+**المسار:** `buytuk-academy/inference-gateway/proto/inference.proto`
+
+```protobuf
+syntax = "proto3";
+
+package buytuk.inference;
+
+option python_generic_services = true;
+
+// =============================================================================
+// Common Types
+// =============================================================================
+message AudioChunk {
+  bytes pcm_data = 1;
+  int32 sample_rate = 2;
+}
+
+message WordTimestamp {
+  string word = 1;
+  float start = 2;
+  float end = 3;
+  float confidence = 4;
+}
+
+// =============================================================================
+// STT Service (Whisper)
+// =============================================================================
+service WhisperService {
+  rpc Transcribe(TranscribeRequest) returns (TranscribeResponse);
+}
+
+message TranscribeRequest {
+  AudioChunk audio = 1;
+  string language = 2;
+  bool word_timestamps = 3;
+}
+
+message TranscribeResponse {
+  string text = 1;
+  repeated WordTimestamp words = 2;
+  float duration = 3;
+}
+
+// =============================================================================
+// Alignment Service
+// =============================================================================
+service AlignmentService {
+  rpc AlignWord(AlignWordRequest) returns (AlignWordResponse);
+}
+
+message AlignWordRequest {
+  AudioChunk audio = 1;
+  string transcript = 2;
+}
+
+message AlignWordResponse {
+  repeated WordTimestamp words = 1;
+}
+
+// =============================================================================
+// G2P Service
+// =============================================================================
+service G2PService {
+  rpc Convert(G2PRequest) returns (G2PResponse);
+}
+
+message G2PRequest {
+  string text = 1;
+  bool diacritize = 2;
+}
+
+message G2PResponse {
+  string original = 1;
+  string diacritized = 2;
+  repeated string phonemes = 3;
+}
+
+// =============================================================================
+// Feedback Service (LLM)
+// =============================================================================
+service FeedbackService {
+  rpc GenerateFeedback(FeedbackRequest) returns (FeedbackResponse);
+}
+
+message FeedbackRequest {
+  string student_errors_json = 1;
+  string exercise_context = 2;
+}
+
+message FeedbackResponse {
+  string personalized_feedback = 1;
+  string recommended_exercise_id = 2;
+}

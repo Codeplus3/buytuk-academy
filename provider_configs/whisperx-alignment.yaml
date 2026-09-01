@@ -1,0 +1,18 @@
+# =============================================================================
+# BuyTuk Academy - WhisperX Forced Alignment Configuration
+# =============================================================================
+
+alignment:
+  model_name: "WAV2VEC2_ASR_BASE_960H"
+  language_code: "ar"
+  device: "cuda"
+  compute_type: "float16"
+
+processing:
+  batch_size: 16
+  return_char_alignments: false
+  
+# Fallback to MMS if WhisperX alignment fails for specific Arabic phonemes
+fallback:
+  enabled: true
+  model: "mms-fa-arabic"

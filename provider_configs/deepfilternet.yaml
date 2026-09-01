@@ -1,0 +1,17 @@
+# =============================================================================
+# BuyTuk Academy - DeepFilterNet (Audio Enhancement) Configuration
+# =============================================================================
+
+model:
+  name: "deepfilternet2"
+  device: "cuda"
+
+processing:
+  attenuation_limit_db: 100
+  min_db: -100
+  frame_size: 960
+  hop_size: 480
+  
+post_filter:
+  enabled: true
+  beta: 0.02

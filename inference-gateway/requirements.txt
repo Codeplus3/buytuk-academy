@@ -1,0 +1,26 @@
+# Core gRPC
+grpcio==1.60.0
+grpcio-tools==1.60.0
+protobuf==4.25.2
+
+# ML Frameworks
+torch==2.1.2
+torchaudio==2.1.2
+transformers==4.36.2
+accelerate==0.25.0
+
+# Speech-to-Text & Alignment
+openai-whisper==20231117
+whisperx==3.1.1
+
+# Arabic NLP
+camel-tools==1.2.2
+
+# LLM Integration
+openai==1.6.1
+google-generativeai==0.3.2
+
+# Utilities
+numpy==1.26.3
+python-dotenv==1.0.0
+pydantic==2.5.3

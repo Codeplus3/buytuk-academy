@@ -1,0 +1,64 @@
+# =============================================================================
+# BuyTuk Academy - ConfigMap
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: buytuk-config
+  namespace: buytuk-academy
+  labels:
+    app.kubernetes.io/name: buytuk-academy
+data:
+  # Application
+  NODE_ENV: "production"
+  APP_VERSION: "1.0.0"
+  PORT: "4000"
+  HOST: "0.0.0.0"
+  LOG_LEVEL: "info"
+  
+  # Database
+  DATABASE_POOL_MIN: "5"
+  DATABASE_POOL_MAX: "20"
+  
+  # Redis
+  REDIS_URL: "redis://buytuk-redis:6379"
+  REDIS_PREFIX: "buytuk:"
+  
+  # JWT
+  JWT_EXPIRES_IN: "7d"
+  JWT_REFRESH_EXPIRES_IN: "30d"
+  
+  # AWS S3
+  AWS_REGION: "us-east-1"
+  S3_BUCKET: "buytuk-academy"
+  S3_AUDIO_BUCKET: "buytuk-audio"
+  S3_PRESIGNED_EXPIRES: "3600"
+  
+  # Inference Gateway
+  INFERENCE_GATEWAY_URL: "buytuk-inference:50050"
+  
+  # LLM
+  LLM_PROVIDER: "gemini"
+  
+  # Observability
+  OTEL_ENDPOINT: "http://otel-collector:4318/v1/traces"
+  PROMETHEUS_ENABLED: "true"
+  
+  # Security
+  RATE_LIMIT_WINDOW_MS: "900000"
+  RATE_LIMIT_MAX_REQUESTS: "100"
+  CORS_ORIGIN: "https://app.buytuk.com"
+  
+  # ML Models
+  WHISPER_MODEL: "large-v3-turbo"
+  WAV2VEC2_MODEL: "jonatasgrosman/wav2vec2-large-xlsr-53-arabic"
+  MMS_MODEL: "facebook/mms-1b-all"
+  
+  # Worker
+  WORKER_CONCURRENCY: "3"
+  WORKER_MAX_JOBS: "50"
+  
+  # Wallet & Points
+  WALLET_CURRENCY: "SAR"
+  POINTS_EXCHANGE_RATE: "10"
