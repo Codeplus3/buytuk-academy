@@ -1,0 +1,24 @@
+{
+  "name": "@buytuk/security",
+  "version": "1.0.0",
+  "description": "Security layer for BuyTuk Academy - encryption, RLS, tokens",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2",
+    "aws-sdk": "^2.1618.0"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.6",
+    "typescript": "^5.4.5"
+  }
+}

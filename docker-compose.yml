@@ -1,0 +1,235 @@
+# =============================================================================
+# BuyTuk Academy - Docker Compose (Development)
+# =============================================================================
+# Usage:
+#   Development:  docker-compose up
+#   Production:   docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#   With GPU:     docker-compose --profile gpu up -d
+# =============================================================================
+
+version: "3.8"
+
+services:
+  # ===== PostgreSQL =====
+  postgres:
+    image: postgres:16-alpine
+    container_name: buytuk-postgres
+    environment:
+      POSTGRES_USER: buytuk
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-buytuk_secret}
+      POSTGRES_DB: buytuk_academy
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U buytuk"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - buytuk-network
+
+  # ===== Redis =====
+  redis:
+    image: redis:7-alpine
+    container_name: buytuk-redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - buytuk-network
+
+  # ===== API Server =====
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    container_name: buytuk-api
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - DATABASE_URL=postgresql://buytuk:${DB_PASSWORD:-buytuk_secret}@postgres:5432/buytuk_academy
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET:-dev-jwt-secret}
+      - AUDIO_KEK=${AUDIO_KEK:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      - INFERENCE_GATEWAY_URL=gateway:50050
+      - INFERENCE_API_KEY=${INFERENCE_API_KEY:-dev-key}
+      - CORS_ORIGIN=http://localhost:3000
+      - LOG_LEVEL=debug
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/api/node_modules
+      - /app/engines
+      - /app/domains
+      - /app/packages
+    networks:
+      - buytuk-network
+
+  # ===== Frontend =====
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    container_name: buytuk-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:4000
+      - NEXT_PUBLIC_SOCKET_URL=http://localhost:4000
+    depends_on:
+      - api
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/web/node_modules
+      - /app/apps/web/.next
+    networks:
+      - buytuk-network
+
+  # ===== Worker =====
+  worker:
+    build:
+      context: .
+      dockerfile: docker/worker.Dockerfile
+    container_name: buytuk-worker
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://buytuk:${DB_PASSWORD:-buytuk_secret}@postgres:5432/buytuk_academy
+      - REDIS_URL=redis://redis:6379
+      - INFERENCE_GATEWAY_URL=gateway:50050
+      - INFERENCE_API_KEY=${INFERENCE_API_KEY:-dev-key}
+      - LOG_LEVEL=debug
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/worker/node_modules
+    networks:
+      - buytuk-network
+
+  # ===== Inference Gateway =====
+  gateway:
+    build:
+      context: ./inference-gateway
+      dockerfile: Dockerfile
+    container_name: buytuk-gateway
+    ports:
+      - "50050:50050"
+    environment:
+      - INFERENCE_API_KEY=${INFERENCE_API_KEY:-dev-key}
+      - WHISPER_WORKER=whisper:50051
+      - ALIGNMENT_WORKER=alignment:50052
+      - G2P_WORKER=g2p:50053
+      - FEEDBACK_WORKER=feedback:50054
+      - GATEWAY_PORT=50050
+    depends_on:
+      - whisper
+      - alignment
+      - g2p
+      - feedback
+    networks:
+      - buytuk-network
+
+  # ===== Whisper Worker (GPU) =====
+  whisper:
+    build:
+      context: ./inference-gateway
+      dockerfile: Dockerfile
+    container_name: buytuk-whisper
+    profiles: ["gpu"]
+    environment:
+      - WORKER_PORT=50051
+      - WHISPER_MODEL=large-v3-turbo
+    command: ["python3", "workers/whisper_worker.py"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - whisper_cache:/root/.cache
+    networks:
+      - buytuk-network
+
+  # ===== Alignment Worker (GPU) =====
+  alignment:
+    build:
+      context: ./inference-gateway
+      dockerfile: Dockerfile
+    container_name: buytuk-alignment
+    profiles: ["gpu"]
+    environment:
+      - WORKER_PORT=50052
+    command: ["python3", "workers/alignment_worker.py"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - alignment_cache:/root/.cache
+    networks:
+      - buytuk-network
+
+  # ===== G2P Worker (CPU) =====
+  g2p:
+    build:
+      context: ./inference-gateway
+      dockerfile: Dockerfile
+    container_name: buytuk-g2p
+    profiles: ["gpu"]
+    environment:
+      - WORKER_PORT=50053
+    command: ["python3", "workers/g2p_worker.py"]
+    networks:
+      - buytuk-network
+
+  # ===== Feedback Worker (CPU) =====
+  feedback:
+    build:
+      context: ./inference-gateway
+      dockerfile: Dockerfile
+    container_name: buytuk-feedback
+    profiles: ["gpu"]
+    environment:
+      - WORKER_PORT=50054
+      - LLM_PROVIDER=${LLM_PROVIDER:-gemini}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    command: ["python3", "workers/feedback_worker.py"]
+    networks:
+      - buytuk-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  whisper_cache:
+  alignment_cache:
+
+networks:
+  buytuk-network:
+    driver: bridge

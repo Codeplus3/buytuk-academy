@@ -1,0 +1,26 @@
+{
+  "extends": "../../packages/config/tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "jsx": "react-jsx",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "incremental": true,
+    "paths": {
+      "@buytuk/contracts": ["../../packages/contracts/src/index.ts"],
+      "@buytuk/config": ["../../packages/config/src/index.ts"],
+      "@buytuk/shared": ["../../packages/shared/src/index.ts"],
+      "@buytuk/database": ["../../packages/database/src/index.ts"],
+      "@buytuk/queue": ["../../packages/queue/src/index.ts"],
+      "@buytuk/security": ["../../packages/security/src/index.ts"],
+      "@buytuk/observability": ["../../packages/observability/src/index.ts"],
+      "@buytuk/reading-engine": ["../../engines/reading-engine/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "test"]
+}

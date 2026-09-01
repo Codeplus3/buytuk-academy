@@ -1,0 +1,22 @@
+{
+  "name": "@buytuk/exercises-catalog",
+  "version": "1.0.0",
+  "description": "Curated exercise catalog for BuyTuk Academy",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./arabic": "./dist/arabic/index.js",
+    "./english": "./dist/english/index.js",
+    "./math": "./dist/math/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

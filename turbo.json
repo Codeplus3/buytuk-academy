@@ -1,67 +1,137 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [".env", ".env.*"],
+  "globalDependencies": [
+    ".env",
+    ".env.*",
+    "tsconfig.base.json"
+  ],
   "globalEnv": [
     "NODE_ENV",
     "PORT",
     "DATABASE_URL",
-    "BUYTUK_DATABASE_URL",
     "REDIS_URL",
-    "KAFKA_BROKERS",
     "JWT_SECRET",
-    "REFRESH_TOKEN_SECRET",
+    "AUDIO_KEK",
+    "INFERENCE_GATEWAY_URL",
+    "INFERENCE_API_KEY",
+    "LLM_PROVIDER",
+    "GEMINI_API_KEY",
     "OPENAI_API_KEY",
-    "ANTHROPIC_API_KEY",
     "AWS_REGION",
     "AWS_ACCESS_KEY_ID",
     "AWS_SECRET_ACCESS_KEY",
     "S3_BUCKET",
+    "CORS_ORIGIN",
     "LOG_LEVEL",
-    "SESSION_SECRET"
+    "OTEL_ENDPOINT",
+    "NEXT_PUBLIC_API_URL",
+    "NEXT_PUBLIC_SOCKET_URL"
   ],
-  "pipeline": {
+  "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": [
+        "dist/**",
+        ".next/**",
+        "!.next/cache/**"
+      ],
+      "inputs": [
+        "src/**",
+        "package.json",
+        "tsconfig.json"
+      ]
     },
     "dev": {
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     },
+    "lint": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "inputs": [
+        "src/**",
+        ".eslintrc*",
+        "eslint.config.*"
+      ]
+    },
+    "lint:fix": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "inputs": [
+        "src/**",
+        ".eslintrc*",
+        "eslint.config.*"
+      ]
+    },
+    "type-check": {
+      "dependsOn": ["^build"],
+      "outputs": ["*.tsbuildinfo"],
+      "inputs": [
+        "src/**",
+        "tsconfig.json"
+      ]
+    },
     "test": {
-      "dependsOn": ["build"],
-      "outputs": ["coverage/**"]
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "vitest.config.*",
+        "jest.config.*"
+      ]
     },
     "test:unit": {
-      "dependsOn": ["build"]
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "inputs": [
+        "src/**",
+        "tests/unit/**"
+      ]
     },
     "test:integration": {
-      "dependsOn": ["build"]
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "inputs": [
+        "src/**",
+        "tests/integration/**"
+      ]
     },
     "test:e2e": {
-      "dependsOn": ["build"]
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "inputs": [
+        "src/**",
+        "tests/e2e/**"
+      ]
     },
     "test:coverage": {
-      "dependsOn": ["build"],
-      "outputs": ["coverage/**"]
-    },
-    "typecheck": {
-      "dependsOn": ["^typecheck"]
-    },
-    "lint": {
-      "outputs": []
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "inputs": [
+        "src/**",
+        "tests/**"
+      ]
     },
     "clean": {
       "cache": false
     },
-    "generate": {
+    "db:generate": {
       "cache": false
     },
     "db:migrate": {
       "cache": false
     },
+    "db:push": {
+      "cache": false
+    },
     "db:seed": {
       "cache": false
+    },
+    "db:studio": {
+      "cache": false,
+      "persistent": true
     }
   }
 }

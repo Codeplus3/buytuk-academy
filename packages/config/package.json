@@ -1,0 +1,25 @@
+{
+  "name": "@buytuk/config",
+  "version": "1.0.0",
+  "description": "Shared configuration for BuyTuk Academy monorepo",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./eslint.base.js": "./eslint.base.js",
+    "./tailwind.preset.js": "./tailwind.preset.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@buytuk/curriculum",
+  "version": "1.0.0",
+  "description": "Curriculum standards and mapping for BuyTuk Academy",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
