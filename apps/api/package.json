@@ -37,7 +37,6 @@
     "@buytuk/queue": "workspace:*",
     "@buytuk/security": "workspace:*",
     "@buytuk/observability": "workspace:*",
-    "@buytuk/reading-engine": "workspace:*",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",

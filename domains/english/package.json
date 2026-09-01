@@ -1,0 +1,19 @@
+{
+  "name": "@buytuk/domain-english",
+  "version": "1.0.0",
+  "description": "BuyTuk Academy - English Language Domain",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@buytuk/contracts": "workspace:*",
+    "@buytuk/config": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

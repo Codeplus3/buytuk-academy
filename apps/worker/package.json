@@ -1,0 +1,28 @@
+{
+  "name": "@buytuk/worker",
+  "version": "1.0.0",
+  "description": "BuyTuk Academy - BullMQ Workers",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@nestjs/common": "^10.3.7",
+    "@nestjs/config": "^3.2.2",
+    "@buytuk/queue": "workspace:*",
+    "@buytuk/contracts": "workspace:*",
+    "@buytuk/config": "workspace:*",
+    "@buytuk/observability": "workspace:*",
+    "bull": "^4.12.2",
+    "ioredis": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "typescript": "^5.4.5",
+    "tsx": "^4.21.0"
+  }
+}

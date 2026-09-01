@@ -1,35 +1,20 @@
 {
-  "buildCommand": "pnpm build",
-  "devCommand": "pnpm dev",
+  "buildCommand": "pnpm build:web",
+  "devCommand": "pnpm dev:web",
   "installCommand": "pnpm install --frozen-lockfile",
-  "framework": "vite",
-  "outputDirectory": "dist",
-  "nodeVersion": "18.x",
+  "framework": "nextjs",
+  "outputDirectory": "apps/web/.next",
+  "nodeVersion": "20.x",
   "env": [
     {
-      "key": "VITE_API_URL",
+      "key": "NEXT_PUBLIC_API_URL",
       "description": "API endpoint URL",
-      "value": "http://localhost:3001/api"
+      "value": "http://localhost:4000"
     },
     {
-      "key": "VITE_DEFAULT_LANGUAGE",
+      "key": "NEXT_PUBLIC_DEFAULT_LANGUAGE",
       "description": "Default language (ar or en)",
       "value": "ar"
-    },
-    {
-      "key": "VITE_ENABLE_PWA",
-      "description": "Enable Progressive Web App",
-      "value": "true"
-    },
-    {
-      "key": "VITE_ENABLE_ANALYTICS",
-      "description": "Enable analytics tracking",
-      "value": "false"
-    },
-    {
-      "key": "VITE_ENABLE_OFFLINE_MODE",
-      "description": "Enable offline functionality",
-      "value": "true"
     }
   ]
 }
