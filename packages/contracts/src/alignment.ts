@@ -2,7 +2,6 @@
 // BuyTuk Academy - Alignment Contracts
 // =============================================================================
 
-import { ErrorSeverity } from "./enums.js";
 import type { PhonemeError } from "./phoneme.js";
 
 export type AlignmentOpType =

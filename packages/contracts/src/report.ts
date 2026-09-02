@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { MasteryLevel, TrendDirection } from "./enums.js";
-import type { WordReportItem, PhonemeReportItem } from "./phoneme.js";
+import type { WordReportItem } from "./phoneme.js";
 import type { GapResult } from "./gap.js";
 import type { Recommendation } from "./recommendation.js";
 import type { AIFeedback } from "./alignment.js";

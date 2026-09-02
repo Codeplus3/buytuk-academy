@@ -2,8 +2,6 @@
 // BuyTuk Academy - WebSocket Contracts
 // =============================================================================
 
-import type { AttemptStatus, SessionStatus } from "./enums.js";
-
 // ===== Client -> Server Events =====
 export interface ClientToServerEvents {
   start_session: {
