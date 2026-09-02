@@ -13,6 +13,14 @@ import {
   type ScheduledTaskJob,
 } from "@buytuk/queue";
 import { logger } from "@buytuk/observability";
+import {
+  handleAnalyze,
+  handleCleanup,
+  handleEmail,
+  handleNotification,
+  handleRealtime,
+  handleScheduled,
+} from "./handlers.js";
 
 const queueNames: QueueName[] = [
   "analyze",
@@ -86,10 +94,16 @@ function validateJobData(queueName: QueueName, data: unknown): void {
   }
 }
 
-async function processJob(queueName: QueueName, job: Job): Promise<{ processed: true; queue: QueueName }> {
+async function processJob(queueName: QueueName, job: Job): Promise<unknown> {
   validateJobData(queueName, job.data);
-  logger.info({ queue: queueName, jobId: job.id, correlationId: job.data.correlationId }, "Queue job processed");
-  return { processed: true, queue: queueName };
+  switch (queueName) {
+    case "analyze": return handleAnalyze(job.data as AnalyzeJob);
+    case "realtime": return handleRealtime(job.data as RealtimeFeedbackJob);
+    case "notification": return handleNotification(job.data as NotificationJob);
+    case "email": return handleEmail(job.data as EmailJob);
+    case "cleanup": return handleCleanup(job.data as CleanupJob);
+    case "scheduled": return handleScheduled(job.data as ScheduledTaskJob);
+  }
 }
 
 export interface WorkerRuntime {

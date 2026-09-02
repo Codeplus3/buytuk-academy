@@ -17,6 +17,7 @@ RUN pnpm install --frozen-lockfile
 
 # Build
 COPY apps/worker/ ./apps/worker/
+COPY inference-gateway/proto/ ./inference-gateway/proto/
 COPY tsconfig.base.json ./
 RUN pnpm --filter @buytuk/worker build
 
