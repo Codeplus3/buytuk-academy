@@ -3,17 +3,5 @@
   "devCommand": "pnpm dev:web",
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": "nextjs",
-  "outputDirectory": "apps/web/.next",
-  "env": [
-    {
-      "key": "NEXT_PUBLIC_API_URL",
-      "description": "API endpoint URL",
-      "value": "http://localhost:4000"
-    },
-    {
-      "key": "NEXT_PUBLIC_DEFAULT_LANGUAGE",
-      "description": "Default language (ar or en)",
-      "value": "ar"
-    }
-  ]
+  "outputDirectory": "apps/web/.next"
 }
