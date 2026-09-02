@@ -1,7 +1,10 @@
 import os
 import sys
 from pathlib import Path
+import numpy as np
 import grpc
+import torch
+import whisperx
 from concurrent import futures
 sys.path.insert(0, str(Path(__file__).parents[1]))
 sys.path.insert(0, str(Path(__file__).parents[1] / "gateway"))
@@ -9,19 +12,47 @@ from gateway import inference_pb2, inference_pb2_grpc
 
 class AlignmentServicer:
     def __init__(self):
-        print("Loading Alignment Models (WhisperX/MMS)...")
-        # self.model = whisperx.load_align_model(...)
-        print("Alignment models loaded.")
+        self.device = os.getenv("ALIGNMENT_DEVICE", "cuda" if torch.cuda.is_available() else "cpu")
+        self.language = os.getenv("ALIGNMENT_LANGUAGE", "ar")
+        self.model = None
+        self.metadata = None
+
+    def _load_model(self):
+        if self.model is None:
+            self.model, self.metadata = whisperx.load_align_model(
+                language_code=self.language,
+                device=self.device,
+            )
 
     def AlignWord(self, request, context):
-        words = request.transcript.split()
-        if not words:
+        if not request.transcript.strip() or not request.audio.pcm_data:
             context.abort(grpc.StatusCode.INVALID_ARGUMENT, "Transcript must not be empty")
-        duration = len(request.audio.pcm_data) / (4 * request.audio.sample_rate) if request.audio.sample_rate else 0
-        step = duration / len(words) if duration else 0
+        if request.audio.sample_rate <= 0:
+            context.abort(grpc.StatusCode.INVALID_ARGUMENT, "Audio sample rate must be positive")
+        try:
+            self._load_model()
+            audio = np.frombuffer(request.audio.pcm_data, dtype=np.float32)
+            duration = len(audio) / request.audio.sample_rate
+            segments = [{"text": request.transcript, "start": 0.0, "end": duration}]
+            aligned = whisperx.align(
+                segments,
+                self.model,
+                self.metadata,
+                audio,
+                self.device,
+                return_char_alignments=False,
+            )
+        except Exception as error:
+            context.abort(grpc.StatusCode.INTERNAL, f"Alignment model failed: {error}")
+
         response = inference_pb2.AlignWordResponse()
-        for index, word in enumerate(words):
-            response.words.add(word=word, start=index * step, end=(index + 1) * step, confidence=1.0)
+        for word in aligned.get("word_segments", []):
+            response.words.add(
+                word=word.get("word", "").strip(),
+                start=float(word.get("start", 0.0)),
+                end=float(word.get("end", 0.0)),
+                confidence=float(word.get("score", 0.0)),
+            )
         return response
 
 def serve():

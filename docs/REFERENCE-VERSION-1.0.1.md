@@ -8,6 +8,7 @@ This document records the reference implementation saved in the repository after
 
 - Authentication validates users from the database with bcrypt and rejects inactive accounts.
 - JWT configuration requires an explicit `JWT_SECRET` and supports `JWT_EXPIRES_IN`.
+- All API routes require JWT by default; only routes explicitly marked `@Public()` are unauthenticated.
 - BullMQ workers are registered for analyze, realtime, notification, email, cleanup, and scheduled queues.
 - Worker failures are sent to the dead-letter queue after retry exhaustion.
 - React, Next.js, and React type packages are aligned for the web application.
@@ -17,13 +18,16 @@ This document records the reference implementation saved in the repository after
 - The gRPC inference gateway now registers Whisper, Alignment, G2P, and Feedback services.
 - Gateway proxies use worker routing, timeouts, and circuit-breaker handling.
 - ML worker RPC handlers and protobuf generation during Docker build were added.
+- WhisperX alignment is used for real word-level alignment instead of equal-time placeholders.
+- API, Worker, and Gateway test coverage was added.
+- `pnpm-lock.yaml` was generated for reproducible dependency resolution.
 
 ## Verification
 
 - TypeScript editor diagnostics passed for changed authentication, worker, web, and attendance API files.
-- Python syntax validation passed for gateway and ML worker files.
+- Python syntax validation passed for changed gateway and ML worker files.
 - JSON configuration validation passed for web configuration.
-- Full Node, pnpm, gRPC, and Docker runtime tests remain pending because the required local dependencies and service credentials are not installed in the current environment.
+- Full build and runtime tests remain pending because dependency installation was interrupted by npm registry connectivity and Docker/kubectl are unavailable in the current environment.
 
 ## Required Runtime Setup
 

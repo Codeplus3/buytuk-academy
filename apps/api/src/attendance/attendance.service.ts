@@ -1,5 +1,5 @@
 import { Inject, Injectable, ForbiddenException } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import {
   attendanceRecords,
   classes,

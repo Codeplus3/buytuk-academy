@@ -25,7 +25,7 @@ async function loadAudio(audioKey: string): Promise<Buffer> {
   return Buffer.from(await response.arrayBuffer());
 }
 
-function similarity(expected: string, actual: string): number {
+export function similarity(expected: string, actual: string): number {
   const left = expected.trim().toLowerCase();
   const right = actual.trim().toLowerCase();
   if (left === right) return 1;
