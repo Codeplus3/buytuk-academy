@@ -11,7 +11,9 @@ from gateway.proxy import AlignmentProxy, FeedbackProxy, G2PProxy, WhisperProxy
 
 def serve():
     port = os.getenv("GATEWAY_PORT", "50050")
-    api_key = os.getenv("INFERENCE_API_KEY", "dev-key")
+    api_key = os.getenv("INFERENCE_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("INFERENCE_API_KEY must be configured")
     
     # Setup interceptors
     interceptors = [AuthInterceptor(api_key)]
@@ -26,7 +28,15 @@ def serve():
     inference_pb2_grpc.add_G2PServiceServicer_to_server(G2PProxy(), server)
     inference_pb2_grpc.add_FeedbackServiceServicer_to_server(FeedbackProxy(), server)
     
-    server.add_insecure_port(f"[::]:{port}")
+    cert_file = os.getenv("INFERENCE_TLS_CERT")
+    key_file = os.getenv("INFERENCE_TLS_KEY")
+    if cert_file and key_file:
+        credentials = grpc.ssl_server_credentials(((Path(key_file).read_bytes(), Path(cert_file).read_bytes()),))
+        server.add_secure_port(f"[::]:{port}", credentials)
+    elif os.getenv("INFERENCE_ALLOW_INSECURE", "false").lower() == "true":
+        server.add_insecure_port(f"[::]:{port}")
+    else:
+        raise RuntimeError("TLS is required unless INFERENCE_ALLOW_INSECURE=true")
     server.start()
     print(f" Inference Gateway started on port {port}")
     server.wait_for_termination()

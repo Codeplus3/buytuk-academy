@@ -1,5 +1,5 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
-import { getAuth, signInAnonymously, type Auth } from "firebase/auth";
+import { getAuth, type Auth, type User } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 
 let firestore: Firestore | null = null;
@@ -24,11 +24,12 @@ export function getFirebaseFirestore(): Firestore | null {
   return firestore;
 }
 
-export async function ensureFirebaseAuth(): Promise<Firestore | null> {
+export async function ensureFirebaseAuth(): Promise<{ db: Firestore; user: User } | null> {
   const db = getFirebaseFirestore();
   if (!db) return null;
 
   auth ??= getAuth();
-  if (!auth.currentUser) await signInAnonymously(auth);
-  return db;
+  const user = auth.currentUser;
+  if (!user || user.isAnonymous) return null;
+  return { db, user };
 }

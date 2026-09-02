@@ -63,7 +63,7 @@ services:
       - JWT_SECRET=${JWT_SECRET:-dev-jwt-secret}
       - AUDIO_KEK=${AUDIO_KEK:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
       - INFERENCE_GATEWAY_URL=gateway:50050
-      - INFERENCE_API_KEY=${INFERENCE_API_KEY:-dev-key}
+      - INFERENCE_API_KEY=${INFERENCE_API_KEY:?INFERENCE_API_KEY must be set}
       - CORS_ORIGIN=http://localhost:3000
       - LOG_LEVEL=debug
     depends_on:
@@ -113,7 +113,7 @@ services:
       - DATABASE_URL=postgresql://buytuk:${DB_PASSWORD:-buytuk_secret}@postgres:5432/buytuk_academy
       - REDIS_URL=redis://redis:6379
       - INFERENCE_GATEWAY_URL=gateway:50050
-      - INFERENCE_API_KEY=${INFERENCE_API_KEY:-dev-key}
+      - INFERENCE_API_KEY=${INFERENCE_API_KEY:?INFERENCE_API_KEY must be set}
       - LOG_LEVEL=debug
     depends_on:
       postgres:
@@ -136,12 +136,13 @@ services:
     ports:
       - "50050:50050"
     environment:
-      - INFERENCE_API_KEY=${INFERENCE_API_KEY:-dev-key}
+      - INFERENCE_API_KEY=${INFERENCE_API_KEY:?INFERENCE_API_KEY must be set}
       - WHISPER_WORKER=whisper:50051
       - ALIGNMENT_WORKER=alignment:50052
       - G2P_WORKER=g2p:50053
       - FEEDBACK_WORKER=feedback:50054
       - GATEWAY_PORT=50050
+      - INFERENCE_ALLOW_INSECURE=${INFERENCE_ALLOW_INSECURE:-true}
     depends_on:
       - whisper
       - alignment

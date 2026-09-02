@@ -14,7 +14,7 @@ This document records the reference implementation saved in the repository after
 - The missing web `globals.css` entry point was added.
 - Student, teacher, and admin attendance views were added under `apps/web/app/attendance`.
 - Attendance reads and writes use Firebase Firestore when configured, with a non-persistent demo fallback.
-- Firebase anonymous authentication and initial Firestore rules were added for the attendance flow.
+- Firebase requires a signed-in non-anonymous user for persistent attendance, with ownership rules in `firestore.rules`.
 - The gRPC inference gateway now registers Whisper, Alignment, G2P, and Feedback services.
 - Gateway proxies use worker routing, timeouts, and circuit-breaker handling.
 - ML worker RPC handlers and protobuf generation during Docker build were added.
@@ -31,5 +31,5 @@ This document records the reference implementation saved in the repository after
 1. Install Node.js 20+, pnpm 9+, and the workspace dependencies.
 2. Configure `JWT_SECRET`, `DATABASE_URL`, and `REDIS_URL`.
 3. Fill the `NEXT_PUBLIC_FIREBASE_*` variables in `.env`.
-4. Enable Anonymous Authentication and deploy `firestore.rules` in Firebase.
+4. Configure a real Firebase sign-in provider, create the required `userProfiles` role records, and deploy `firestore.rules`.
 5. Install the Python inference requirements and build the gateway image to generate protobuf files.

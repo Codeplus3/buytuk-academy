@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import grpc
 
@@ -10,7 +11,12 @@ class WorkerProxy:
     def __init__(self, target_env: str):
         self.target = os.getenv(target_env, "")
         self.breaker = CircuitBreaker()
-        self.channel = grpc.insecure_channel(self.target) if self.target else None
+        ca_file = os.getenv("INFERENCE_WORKER_CA_CERT")
+        if self.target and ca_file:
+            credentials = grpc.ssl_channel_credentials(root_certificates=Path(ca_file).read_bytes())
+            self.channel = grpc.secure_channel(self.target, credentials)
+        else:
+            self.channel = grpc.insecure_channel(self.target) if self.target else None
 
     def forward(self, method, request, context):
         if method is None:

@@ -2,8 +2,10 @@ import {
   collection,
   doc,
   getDocs,
+  query,
   setDoc,
   type Firestore,
+  where,
 } from "firebase/firestore";
 import { ensureFirebaseAuth } from "./firebase";
 import { demoAttendance, type AttendanceRecord } from "../app/attendance/types";
@@ -34,10 +36,13 @@ function mapRecord(data: Record<string, unknown>, fallbackId: string): Attendanc
 }
 
 export async function loadAttendance(): Promise<{ records: AttendanceRecord[]; persistent: boolean }> {
-  const db = await ensureFirebaseAuth();
-  if (!db) return { records: demoAttendance, persistent: false };
+  const session = await ensureFirebaseAuth();
+  if (!session) return { records: demoAttendance, persistent: false };
 
-  const snapshot = await getDocs(collection(db, ATTENDANCE_COLLECTION));
+  const snapshot = await getDocs(query(
+    collection(session.db, ATTENDANCE_COLLECTION),
+    where("ownerUid", "==", session.user.uid),
+  ));
   const records = snapshot.docs
     .map((item) => mapRecord(item.data(), item.id))
     .filter((record): record is AttendanceRecord => record !== null)
@@ -46,14 +51,16 @@ export async function loadAttendance(): Promise<{ records: AttendanceRecord[]; p
 }
 
 export async function saveAttendance(records: AttendanceRecord[]): Promise<void> {
-  const db = await ensureFirebaseAuth();
-  if (!db) throw new Error("Firebase is not configured");
-  await Promise.all(records.map((record) => saveRecord(db, record)));
+  const session = await ensureFirebaseAuth();
+  if (!session) throw new Error("A signed-in Firebase user is required");
+  await Promise.all(records.map((record) => saveRecord(session.db, record, session.user.uid)));
 }
 
-async function saveRecord(db: Firestore, record: AttendanceRecord): Promise<void> {
+async function saveRecord(db: Firestore, record: AttendanceRecord, ownerUid: string): Promise<void> {
   await setDoc(doc(db, ATTENDANCE_COLLECTION, recordId(record)), {
     ...record,
+    ownerUid,
+    markedByUid: ownerUid,
     updatedAt: new Date().toISOString(),
   }, { merge: true });
 }
