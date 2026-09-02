@@ -1,66 +1,80 @@
-import {
-  collection,
-  doc,
-  getDocs,
-  query,
-  setDoc,
-  type Firestore,
-  where,
-} from "firebase/firestore";
-import { ensureFirebaseAuth } from "./firebase";
-import { demoAttendance, type AttendanceRecord } from "../app/attendance/types";
+import { demoAttendance, type AttendanceRecord, type AttendanceStatus } from "../app/attendance/types";
 
-const ATTENDANCE_COLLECTION = "attendanceRecords";
-
-function recordId(record: Pick<AttendanceRecord, "id" | "date" | "subject" | "studentId">): string {
-  return String(record.id || `${record.date}_${record.subject}_${record.studentId}`)
-    .replaceAll("/", "-");
+interface ApiAttendanceRecord {
+  id: number;
+  studentId: number;
+  studentName: string;
+  className: string;
+  date: string;
+  status: AttendanceStatus;
+  markedBy: number;
+  note?: string | null;
 }
 
-function mapRecord(data: Record<string, unknown>, fallbackId: string): AttendanceRecord | null {
-  if (typeof data.studentId !== "number" || typeof data.studentName !== "string" ||
-      typeof data.subject !== "string" || typeof data.date !== "string" ||
-      typeof data.status !== "string") return null;
+function attendanceUrl(): string {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  return baseUrl ? `${baseUrl.replace(/\/$/, "")}/attendance` : "/api/attendance";
+}
 
+function getAccessToken(): string | null {
+  return typeof window === "undefined" ? null : window.localStorage.getItem("buytuk_access_token");
+}
+
+function mapApiRecord(record: ApiAttendanceRecord): AttendanceRecord {
   return {
-    id: typeof data.id === "number" ? data.id : fallbackId,
-    studentId: data.studentId,
-    studentName: data.studentName,
-    className: typeof data.className === "string" ? data.className : "",
-    subject: data.subject,
-    date: data.date,
-    status: data.status as AttendanceRecord["status"],
-    markedBy: typeof data.markedBy === "string" ? data.markedBy : "",
-    note: typeof data.note === "string" ? data.note : undefined,
+    id: record.id,
+    studentId: record.studentId,
+    studentName: record.studentName,
+    className: record.className,
+    subject: record.className,
+    date: record.date,
+    status: record.status,
+    markedBy: String(record.markedBy),
+    note: record.note ?? undefined,
   };
 }
 
 export async function loadAttendance(): Promise<{ records: AttendanceRecord[]; persistent: boolean }> {
-  const session = await ensureFirebaseAuth();
-  if (!session) return { records: demoAttendance, persistent: false };
+  const accessToken = getAccessToken();
+  if (!accessToken) return { records: demoAttendance, persistent: false };
 
-  const snapshot = await getDocs(query(
-    collection(session.db, ATTENDANCE_COLLECTION),
-    where("ownerUid", "==", session.user.uid),
-  ));
-  const records = snapshot.docs
-    .map((item) => mapRecord(item.data(), item.id))
-    .filter((record): record is AttendanceRecord => record !== null)
-    .sort((left, right) => right.date.localeCompare(left.date));
-  return { records, persistent: true };
+  const response = await fetch(attendanceUrl(), {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error(`Attendance request failed with HTTP ${response.status}`);
+  const records = await response.json() as ApiAttendanceRecord[];
+  return { records: records.map(mapApiRecord), persistent: true };
 }
 
 export async function saveAttendance(records: AttendanceRecord[]): Promise<void> {
-  const session = await ensureFirebaseAuth();
-  if (!session) throw new Error("A signed-in Firebase user is required");
-  await Promise.all(records.map((record) => saveRecord(session.db, record, session.user.uid)));
-}
+  const accessToken = getAccessToken();
+  if (!accessToken) throw new Error("A signed-in user is required");
 
-async function saveRecord(db: Firestore, record: AttendanceRecord, ownerUid: string): Promise<void> {
-  await setDoc(doc(db, ATTENDANCE_COLLECTION, recordId(record)), {
-    ...record,
-    ownerUid,
-    markedByUid: ownerUid,
-    updatedAt: new Date().toISOString(),
-  }, { merge: true });
+  const grouped = new Map<string, AttendanceRecord[]>();
+  for (const record of records) {
+    const group = grouped.get(record.date) ?? [];
+    group.push(record);
+    grouped.set(record.date, group);
+  }
+
+  for (const [date, dailyRecords] of grouped) {
+    const response = await fetch(attendanceUrl(), {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        classId: Number(process.env.NEXT_PUBLIC_DEFAULT_CLASS_ID || 1),
+        date,
+        records: dailyRecords.map((record) => ({
+          studentId: record.studentId,
+          status: record.status,
+          notes: record.note,
+        })),
+      }),
+    });
+    if (!response.ok) throw new Error(`Attendance save failed with HTTP ${response.status}`);
+  }
 }

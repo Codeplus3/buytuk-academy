@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CalendarCheck, CheckCircle2, Clock3, FileText, Save, Users, XCircle } from "lucide-react";
-import { loadAttendance, saveAttendance as saveAttendanceToFirestore } from "../../lib/attendance-store";
+import { loadAttendance, saveAttendance as saveAttendanceToApi } from "../../lib/attendance-store";
 import {
   demoAttendance,
   statusLabels,
@@ -93,7 +93,7 @@ function TeacherView() {
     }));
     const remaining = records.filter((record) => !newRecords.some((item) => item.id === record.id));
     try {
-      await saveAttendanceToFirestore(newRecords);
+      await saveAttendanceToApi(newRecords);
       setRecords([...remaining, ...newRecords]);
       setSaved(true);
     } catch {
@@ -111,7 +111,7 @@ function TeacherView() {
         <div className="mb-6 grid gap-4 sm:grid-cols-2"><label className="text-sm font-bold text-slate-700">المادة<select value={subject} onChange={(event) => setSubject(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 font-normal outline-none focus:border-sky-500">{subjects.map((item) => <option key={item}>{item}</option>)}</select></label><label className="text-sm font-bold text-slate-700">التاريخ<input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 font-normal outline-none focus:border-sky-500" /></label></div>
         <div className="mb-4 flex flex-wrap gap-2"><span className="self-center text-xs font-bold text-slate-500">تعيين الكل:</span>{(["present", "absent", "late", "excused"] as AttendanceStatus[]).map((status) => <button key={status} onClick={() => setAll(status)} className={`rounded-lg px-3 py-2 text-xs font-bold ring-1 ${statusStyles[status]}`}>{statusLabels[status]}</button>)}</div>
         <div className="divide-y divide-slate-100 rounded-xl border border-slate-200">{students.map((student) => <div key={student.id} className="flex flex-wrap items-center justify-between gap-3 p-4"><span className="font-bold text-slate-800">{student.name}</span><select value={statuses[student.id] ?? "present"} onChange={(event) => setStatuses((current) => ({ ...current, [student.id]: event.target.value as AttendanceStatus }))} className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500">{(Object.keys(statusLabels) as AttendanceStatus[]).map((status) => <option key={status} value={status}>{statusLabels[status]}</option>)}</select></div>)}</div>
-        <button onClick={() => void save()} disabled={saving || !persistent} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 font-bold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50"><Save size={18} />{!persistent ? "فعّل Firebase للحفظ" : saving ? "جارٍ الحفظ..." : saved ? "تم حفظ الحضور" : `حفظ حضور ${students.length} طلاب`}</button>
+        <button onClick={() => void save()} disabled={saving || !persistent} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 font-bold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50"><Save size={18} />{!persistent ? "سجّل الدخول للحفظ" : saving ? "جارٍ الحفظ..." : saved ? "تم حفظ الحضور" : `حفظ حضور ${students.length} طلاب`}</button>
       </section>
       <section className="rounded-2xl border border-slate-200 bg-slate-900 p-6 text-white shadow-sm"><Users className="mb-6 text-sky-300" /><h2 className="text-lg font-extrabold">ملخص الحصة</h2><p className="mt-2 text-sm text-slate-300">{subject} · {date}</p><div className="mt-8 space-y-4">{(["present", "absent", "late"] as AttendanceStatus[]).map((status) => <div key={status} className="flex items-center justify-between border-b border-slate-700 pb-3 text-sm"><span className="text-slate-300">{statusLabels[status]}</span><strong>{students.filter((student) => (statuses[student.id] ?? "present") === status).length}</strong></div>)}</div></section>
     </div>

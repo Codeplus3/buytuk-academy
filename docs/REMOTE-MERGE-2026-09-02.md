@@ -23,7 +23,7 @@ The local project is therefore the conservative merged result:
 - BullMQ workers and DLQ handling.
 - React/Next/TypeScript compatibility fixes.
 - Student, teacher, and admin attendance pages.
-- Firebase Firestore attendance integration.
+- PostgreSQL-backed attendance API and web client integration.
 - gRPC inference gateway and ML worker flow.
 - Reference version `1.0.1`.
 
