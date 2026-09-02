@@ -1,5 +1,9 @@
 # BuyTuk Academy
 
+**Reference Version:** 1.0.1 (2026-09-02)
+
+See [Reference Version 1.0.1](./docs/REFERENCE-VERSION-1.0.1.md) for the implementation snapshot and verification status.
+
 **BuyTuk Academy: A smart integrated educational platform connecting schools, teachers, and students**
 
 ## 🚀 Features

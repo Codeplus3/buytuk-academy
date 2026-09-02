@@ -17,7 +17,7 @@
     "@buytuk/contracts": "workspace:*",
     "@buytuk/config": "workspace:*",
     "@buytuk/observability": "workspace:*",
-    "bull": "^4.12.2",
+    "bullmq": "^5.7.0",
     "ioredis": "^5.4.1"
   },
   "devDependencies": {

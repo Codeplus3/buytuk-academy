@@ -28,6 +28,18 @@ export default function Home() {
           إنشاء حساب جديد
         </Link>
       </div>
+
+      <nav className="mt-10 grid gap-3 text-sm sm:grid-cols-3" aria-label="بوابات الحضور">
+        <Link href="/attendance/student" className="rounded-xl border border-slate-200 bg-white px-5 py-3 font-bold text-slate-700 shadow-sm transition hover:border-sky-400 hover:text-sky-700">
+          بوابة حضور الطالب
+        </Link>
+        <Link href="/attendance/teacher" className="rounded-xl border border-slate-200 bg-white px-5 py-3 font-bold text-slate-700 shadow-sm transition hover:border-sky-400 hover:text-sky-700">
+          بوابة تسجيل المعلم
+        </Link>
+        <Link href="/attendance/admin" className="rounded-xl border border-slate-200 bg-white px-5 py-3 font-bold text-slate-700 shadow-sm transition hover:border-sky-400 hover:text-sky-700">
+          لوحة حضور الإدارة
+        </Link>
+      </nav>
     </main>
   );
 }

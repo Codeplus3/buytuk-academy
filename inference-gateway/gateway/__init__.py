@@ -10,9 +10,14 @@ Components:
     - circuit_breaker: Circuit breaker pattern for fault tolerance
 """
 
-from gateway.server import serve as start_gateway
 from gateway.auth import AuthInterceptor
 from gateway.circuit_breaker import CircuitBreaker, CircuitState
+
+
+def start_gateway():
+    from gateway.server import serve
+
+    serve()
 
 __version__ = "1.0.0"
 __all__ = [

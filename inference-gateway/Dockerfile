@@ -24,8 +24,8 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Generate gRPC code (if needed at build time, though usually done in CI)
-# RUN python3 -m grpc_tools.protoc -I./proto --python_out=./gateway --grpc_python_out=./gateway ./proto/inference.proto
+# Generate gRPC code from the versioned contract during the image build.
+RUN python3 -m grpc_tools.protoc -I./proto --python_out=./gateway --grpc_python_out=./gateway ./proto/inference.proto
 
 EXPOSE 50050 50051 50052 50053 50054
 
