@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
         - name: inference
-          image: buytuk-academy/inference:latest
+          image: buytuk-academy/inference:1.0.1
           imagePullPolicy: Always
           ports:
             - containerPort: 50050
@@ -51,6 +51,13 @@ spec:
                 name: buytuk-config
             - secretRef:
                 name: buytuk-secrets
+          env:
+            - name: INFERENCE_ALLOW_INSECURE
+              value: "false"
+            - name: INFERENCE_TLS_CERT
+              value: "/var/run/secrets/buytuk-inference/tls.crt"
+            - name: INFERENCE_TLS_KEY
+              value: "/var/run/secrets/buytuk-inference/tls.key"
           resources:
             requests:
               cpu: "1000m"
@@ -71,10 +78,16 @@ spec:
           volumeMounts:
             - name: model-cache
               mountPath: /root/.cache
+            - name: inference-tls
+              mountPath: /var/run/secrets/buytuk-inference
+              readOnly: true
       volumes:
         - name: model-cache
           persistentVolumeClaim:
             claimName: buytuk-model-cache
+        - name: inference-tls
+          secret:
+            secretName: buytuk-inference-tls
 ---
 apiVersion: v1
 kind: Service
@@ -90,18 +103,6 @@ spec:
     - port: 50050
       targetPort: 50050
       name: gateway
-    - port: 50051
-      targetPort: 50051
-      name: whisper
-    - port: 50052
-      targetPort: 50052
-      name: alignment
-    - port: 50053
-      targetPort: 50053
-      name: g2p
-    - port: 50054
-      targetPort: 50054
-      name: feedback
   type: ClusterIP
 ---
 apiVersion: v1

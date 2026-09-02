@@ -1,0 +1,138 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: buytuk-whisper
+  namespace: buytuk-academy
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: buytuk-whisper }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: buytuk-whisper }
+    spec:
+      containers:
+        - name: whisper
+          image: buytuk-academy/inference:1.0.1
+          command: ["python3", "workers/whisper_worker.py"]
+          ports: [{ containerPort: 50051, name: whisper }]
+          env:
+            - name: WHISPER_PORT
+              value: "50051"
+            - name: WHISPER_MODEL
+              valueFrom: { configMapKeyRef: { name: buytuk-config, key: WHISPER_MODEL } }
+          resources:
+            requests: { cpu: "1000m", memory: "2Gi" }
+            limits: { cpu: "4000m", memory: "8Gi", nvidia.com/gpu: "1" }
+          volumeMounts: [{ name: model-cache, mountPath: /root/.cache }]
+      volumes: [{ name: model-cache, persistentVolumeClaim: { claimName: buytuk-model-cache } }]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: buytuk-whisper
+  namespace: buytuk-academy
+spec:
+  selector: { app.kubernetes.io/name: buytuk-whisper }
+  ports: [{ name: whisper, port: 50051, targetPort: 50051 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: buytuk-alignment
+  namespace: buytuk-academy
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: buytuk-alignment }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: buytuk-alignment }
+    spec:
+      containers:
+        - name: alignment
+          image: buytuk-academy/inference:1.0.1
+          command: ["python3", "workers/alignment_worker.py"]
+          ports: [{ containerPort: 50052, name: alignment }]
+          env: [{ name: ALIGNMENT_PORT, value: "50052" }]
+          resources:
+            requests: { cpu: "1000m", memory: "2Gi" }
+            limits: { cpu: "4000m", memory: "8Gi", nvidia.com/gpu: "1" }
+          volumeMounts: [{ name: model-cache, mountPath: /root/.cache }]
+      volumes: [{ name: model-cache, persistentVolumeClaim: { claimName: buytuk-model-cache } }]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: buytuk-alignment
+  namespace: buytuk-academy
+spec:
+  selector: { app.kubernetes.io/name: buytuk-alignment }
+  ports: [{ name: alignment, port: 50052, targetPort: 50052 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: buytuk-g2p
+  namespace: buytuk-academy
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: buytuk-g2p }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: buytuk-g2p }
+    spec:
+      containers:
+        - name: g2p
+          image: buytuk-academy/inference:1.0.1
+          command: ["python3", "workers/g2p_worker.py"]
+          ports: [{ containerPort: 50053, name: g2p }]
+          env: [{ name: G2P_PORT, value: "50053" }]
+          resources:
+            requests: { cpu: "250m", memory: "512Mi" }
+            limits: { cpu: "1000m", memory: "2Gi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: buytuk-g2p
+  namespace: buytuk-academy
+spec:
+  selector: { app.kubernetes.io/name: buytuk-g2p }
+  ports: [{ name: g2p, port: 50053, targetPort: 50053 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: buytuk-feedback
+  namespace: buytuk-academy
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: buytuk-feedback }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: buytuk-feedback }
+    spec:
+      containers:
+        - name: feedback
+          image: buytuk-academy/inference:1.0.1
+          command: ["python3", "workers/feedback_worker.py"]
+          ports: [{ containerPort: 50054, name: feedback }]
+          envFrom:
+            - configMapRef: { name: buytuk-config }
+            - secretRef: { name: buytuk-secrets }
+          env: [{ name: FEEDBACK_PORT, value: "50054" }]
+          resources:
+            requests: { cpu: "250m", memory: "512Mi" }
+            limits: { cpu: "1000m", memory: "2Gi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: buytuk-feedback
+  namespace: buytuk-academy
+spec:
+  selector: { app.kubernetes.io/name: buytuk-feedback }
+  ports: [{ name: feedback, port: 50054, targetPort: 50054 }]

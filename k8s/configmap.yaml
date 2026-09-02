@@ -12,7 +12,7 @@ metadata:
 data:
   # Application
   NODE_ENV: "production"
-  APP_VERSION: "1.0.0"
+  APP_VERSION: "1.0.1"
   PORT: "4000"
   HOST: "0.0.0.0"
   LOG_LEVEL: "info"
@@ -37,6 +37,10 @@ data:
   
   # Inference Gateway
   INFERENCE_GATEWAY_URL: "buytuk-inference:50050"
+  WHISPER_WORKER: "buytuk-whisper:50051"
+  ALIGNMENT_WORKER: "buytuk-alignment:50052"
+  G2P_WORKER: "buytuk-g2p:50053"
+  FEEDBACK_WORKER: "buytuk-feedback:50054"
   
   # LLM
   LLM_PROVIDER: "gemini"

@@ -133,6 +133,7 @@ services:
       context: ./inference-gateway
       dockerfile: Dockerfile
     container_name: buytuk-gateway
+    profiles: ["ml"]
     ports:
       - "50050:50050"
     environment:
@@ -157,7 +158,7 @@ services:
       context: ./inference-gateway
       dockerfile: Dockerfile
     container_name: buytuk-whisper
-    profiles: ["gpu"]
+    profiles: ["ml"]
     environment:
       - WORKER_PORT=50051
       - WHISPER_MODEL=large-v3-turbo
@@ -180,7 +181,7 @@ services:
       context: ./inference-gateway
       dockerfile: Dockerfile
     container_name: buytuk-alignment
-    profiles: ["gpu"]
+    profiles: ["ml"]
     environment:
       - WORKER_PORT=50052
     command: ["python3", "workers/alignment_worker.py"]
@@ -202,7 +203,7 @@ services:
       context: ./inference-gateway
       dockerfile: Dockerfile
     container_name: buytuk-g2p
-    profiles: ["gpu"]
+    profiles: ["ml"]
     environment:
       - WORKER_PORT=50053
     command: ["python3", "workers/g2p_worker.py"]
@@ -215,7 +216,7 @@ services:
       context: ./inference-gateway
       dockerfile: Dockerfile
     container_name: buytuk-feedback
-    profiles: ["gpu"]
+    profiles: ["ml"]
     environment:
       - WORKER_PORT=50054
       - LLM_PROVIDER=${LLM_PROVIDER:-gemini}

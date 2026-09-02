@@ -44,6 +44,8 @@ pnpm dev
 
 Server runs on `http://localhost:3000`
 
+To start the inference gateway and its workers in Docker, configure `INFERENCE_API_KEY` in `.env` and run `docker compose --profile ml up`.
+
 ### 4. Build for Production
 
 ```bash

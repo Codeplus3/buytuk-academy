@@ -33,3 +33,4 @@ This document records the reference implementation saved in the repository after
 3. Fill the `NEXT_PUBLIC_FIREBASE_*` variables in `.env`.
 4. Configure a real Firebase sign-in provider, create the required `userProfiles` role records, and deploy `firestore.rules`.
 5. Install the Python inference requirements and build the gateway image to generate protobuf files.
+6. For Kubernetes, provision the `buytuk-inference-tls` Secret with `tls.crt` and `tls.key` before applying `k8s/inference-deployment.yaml` and `k8s/inference-workers.yaml`.
